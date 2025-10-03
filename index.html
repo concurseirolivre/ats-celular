@@ -12,27 +12,56 @@
     .gamearea{ margin: auto; width: 100%; max-width: 405px; height:100vh; background-color: #393737; position: relative; border-left:5px dashed white; border-right:5px dashed white; }
     .roadstrip{ height: 85px; width: 6px; background-color: aliceblue; position: absolute; left: 197px; }
     .enemy{ height:70px; width: 50px; background-repeat: no-repeat; background-size:100% 100%; position: absolute; top:400px; }
-    
-    /* --- CSS DA IMAGEM DE CAPA CORRIGIDO --- */
     body{
-        overflow: hidden;
-        width:100%;
-        height:97vh;
-        background: url('capa.png');
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center center;
+        overflow: hidden; width:100%; height:97vh; background: url('capa.png');
+        background-repeat: no-repeat; background-size: cover; background-position: center center;
+    }
+    
+    /* --- BOTÃO 'BORA JOGAR' AJUSTADO (MENOR E NO TOPO) --- */
+    .startscreen{
+        font-family: cursive; margin: auto; height: auto;
+        width: 250px; /* Diminuído */
+        background-color: #3c99d5; color: white; border-radius: 20px;
+        padding: 15px; /* Diminuído */
+        text-align: center;
+        font-size: 28px; /* Diminuído */
+        box-shadow: 0px 6px 10px #c35357; position: relative;
+        top: 30px; /* Movido para o topo */
+        cursor:pointer;
     }
 
-    .startscreen{ font-family: cursive; margin: auto; height: auto; width: 300px; background-color: #3c99d5; color: white; border-radius: 20px; padding: 20px; text-align: center; font-size: 33px; box-shadow: 0px 6px 10px #c35357; position: relative; top: 50px; cursor:pointer; }
     .startscreen small { font-size: 16px; display: block; margin-top: 10px; }
     .score{ height: 44px; width: auto; min-width: 135px; padding: 4px 15px; background-color: blue; color: white; font-size: 30px; position: absolute; border: 2px solid white; border-radius: 11px; box-shadow: 0 5px 5px red; }
     .message-overlay{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
     .message-box { background-color: #ffffff; padding: 20px; border-radius: 15px; text-align: center; width: 90%; max-width: 700px; font-family: sans-serif; }
     .message-box button { background-color: #3c99d5; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1em; cursor: pointer; }
     .message-box img { max-width: 100%; max-height: 70vh; margin-bottom: 20px; }
-    #touch-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 10px; z-index: 100; }
-    #touch-controls div { width: 60px; height: 60px; background-color: rgba(255, 255, 255, 0.3); color: white; font-size: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.5); user-select: none; }
+
+    /* --- CONTROLES DE TOQUE AJUSTADOS (MENORES E NO CANTO) --- */
+    #touch-controls {
+        position: fixed;
+        bottom: 20px;
+        left: 20px; /* Movido para o canto esquerdo */
+        transform: none; /* Removida a centralização */
+        display: grid;
+        grid-template-areas: ". up ." "left . right" ". down .";
+        gap: 15px;
+        z-index: 100;
+        opacity: 0.7; /* Mais transparente para não atrapalhar */
+    }
+    #touch-controls div {
+        width: 50px; /* Diminuído */
+        height: 50px; /* Diminuído */
+        background-color: rgba(0, 0, 0, 0.4);
+        color: white;
+        font-size: 24px; /* Diminuído */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        user-select: none;
+    }
     #btn-up { grid-area: up; } #btn-down { grid-area: down; } #btn-left { grid-area: left; } #btn-right { grid-area: right; }
 </style>
 <body>
@@ -56,10 +85,7 @@
     let startscreen=document.querySelector('.startscreen');
     let gamearea=document.querySelector('.gamearea');
     let speed=3; let speed1=5;
-
-    // --- ERRO CORRIGIDO: A VARIÁVEL score1 ESTAVA FALTANDO ---
-    let score1 = 0; 
-    
+    let score1 = 0; // CORREÇÃO do bug estava aqui, essa linha faltava
     let music =new Audio('music.mp3'); music.loop = true;
     let crash=new Audio('crash.wav');
     let move=new Audio('move1.mp3');
@@ -241,4 +267,13 @@
 		gamearea.classList.add('hide');
         touchControls.classList.add('hide');
         if (isVictory) { startscreen.innerHTML = "Parabéns!<small>Você aprendeu sobre os perigos no trânsito. Clique para jogar de novo.</small>"; }
-        else
+        else { startscreen.innerHTML = 'Click to replay'; }
+		startscreen.classList.remove('hide');
+		score.classList.add('hide');
+        score1 = 0;
+	    speed=4; speed1=5;
+        hitCars.clear();
+        currentCarType = 1;
+    }
+</script>
+</html>
