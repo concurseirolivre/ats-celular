@@ -3,69 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Document</title>
 </head>
 <style>
-    .hide{ display : none !important; }
-    .car{background: url('uno.png'); background-repeat: no-repeat; background-size:100% 100%; height:70px; width: 50px; position: absolute; top:500px; left:100px; }
-    .gamearea{ margin: auto; width: 100%; max-width: 405px; height:100vh; background-color: #393737; position: relative; border-left:5px dashed white; border-right:5px dashed white; }
-    .roadstrip{ height: 85px; width: 6px; background-color: aliceblue; position: absolute; left: 197px; }
-    .enemy{ height:70px; width: 50px; background-repeat: no-repeat; background-size:100% 100%; position: absolute; top:400px; }
+    /* Estilos Gerais */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body{
-        overflow: hidden; width:100%; height:97vh; background: url('capa.png');
-        background-repeat: no-repeat; background-size: cover; background-position: center center;
+        overflow: hidden;
+        width: 100vw; /* Ocupa 100% da largura da tela */
+        height: 100vh; /* Ocupa 100% da altura da tela */
+        background: url('capa.png');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center center;
     }
-    
-    /* --- BOTÃO 'BORA JOGAR' AJUSTADO (MENOR E NO TOPO) --- */
-    .startscreen{
-        font-family: cursive; margin: auto; height: auto;
-        width: 250px; /* Diminuído */
-        background-color: #3c99d5; color: white; border-radius: 20px;
-        padding: 15px; /* Diminuído */
-        text-align: center;
-        font-size: 28px; /* Diminuído */
-        box-shadow: 0px 6px 10px #c35357; position: relative;
-        top: 30px; /* Movido para o topo */
-        cursor:pointer;
+    .hide{ display : none !important; }
+
+    /* Área do Jogo e Elementos */
+    .gamearea{
+        margin: auto;
+        width: 100%;
+        max-width: 360px; /* PISTA MAIS ESTREITA, ideal para celular */
+        height: 100vh;
+        background-color: #393737;
+        position: relative;
+        border-left:5px dashed white;
+        border-right:5px dashed white;
+    }
+    .car{
+        background: url('uno.png'); background-repeat: no-repeat; background-size:100% 100%;
+        height:70px; width: 50px; position: absolute; bottom: 20px; /* Começa mais em baixo */
+    }
+    .enemy{
+        height:70px; width: 50px; background-repeat: no-repeat; background-size:100% 100%;
+        position: absolute;
+    }
+    .roadstrip{
+        height: 85px; width: 6px; background-color: aliceblue; position: absolute;
+        left: 50%; /* Centralizado dinamicamente */
+        transform: translateX(-50%); /* Centralizado dinamicamente */
+    }
+    .score{
+        position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+        width: auto; padding: 5px 15px; background-color: blue; color: white;
+        font-size: 24px; border: 2px solid white; border-radius: 11px;
+        z-index: 10;
     }
 
+    /* Tela de Início e Pop-up */
+    .startscreen{
+        font-family: cursive; margin: auto; height: auto; width: 250px;
+        background-color: #3c99d5; color: white; border-radius: 20px;
+        padding: 15px; text-align: center; font-size: 28px;
+        box-shadow: 0px 6px 10px #c35357; position: relative; top: 15vh; /* 15% do topo da tela */
+        cursor:pointer;
+    }
     .startscreen small { font-size: 16px; display: block; margin-top: 10px; }
-    .score{ height: 44px; width: auto; min-width: 135px; padding: 4px 15px; background-color: blue; color: white; font-size: 30px; position: absolute; border: 2px solid white; border-radius: 11px; box-shadow: 0 5px 5px red; }
     .message-overlay{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
     .message-box { background-color: #ffffff; padding: 20px; border-radius: 15px; text-align: center; width: 90%; max-width: 700px; font-family: sans-serif; }
     .message-box button { background-color: #3c99d5; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1em; cursor: pointer; }
     .message-box img { max-width: 100%; max-height: 70vh; margin-bottom: 20px; }
 
-    /* --- CONTROLES DE TOQUE AJUSTADOS (MENORES E NO CANTO) --- */
-    #touch-controls {
+    /* --- NOVOS CONTROLES DE TOQUE (ESQUERDA/DIREITA) --- */
+    .touch-control {
         position: fixed;
-        bottom: 20px;
-        left: 20px; /* Movido para o canto esquerdo */
-        transform: none; /* Removida a centralização */
-        display: grid;
-        grid-template-areas: ". up ." "left . right" ". down .";
-        gap: 15px;
+        bottom: 0;
+        width: 50%; /* Cada controle ocupa metade da tela */
+        height: 30vh; /* Ocupa 30% da altura da tela, área grande para o dedão */
         z-index: 100;
-        opacity: 0.7; /* Mais transparente para não atrapalhar */
-    }
-    #touch-controls div {
-        width: 50px; /* Diminuído */
-        height: 50px; /* Diminuído */
-        background-color: rgba(0, 0, 0, 0.4);
-        color: white;
-        font-size: 24px; /* Diminuído */
+        /* A cor de fundo é opcional, para depuração. Pode ser transparent. */
+        /* background-color: rgba(255, 0, 0, 0.2); */
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 40px;
         display: flex;
-        justify-content: center;
         align-items: center;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.5);
+        padding: 20px;
         user-select: none;
     }
-    #btn-up { grid-area: up; } #btn-down { grid-area: down; } #btn-left { grid-area: left; } #btn-right { grid-area: right; }
+    #btn-left {
+        left: 0;
+        justify-content: flex-start;
+    }
+    #btn-right {
+        right: 0;
+        justify-content: flex-end;
+    }
 </style>
 <body>
-    <div class="score hide">score : 0</div>
+    <div class="score hide"></div>
     <div class="startscreen ">Bora jogar </div>
     <div class="gamearea hide"></div>
 
@@ -75,8 +101,10 @@
             <button id="continueButton">Continuar</button>
         </div>
     </div>
-    <div id="touch-controls" class="hide">
-        <div id="btn-left">◀</div> <div id="btn-right">▶</div> <div id="btn-up">▲</div> <div id="btn-down">▼</div>
+    
+    <div class="hide" id="touch-container">
+        <div id="btn-left" class="touch-control">◀</div>
+        <div id="btn-right" class="touch-control">▶</div>
     </div>
 
 </body>
@@ -85,7 +113,7 @@
     let startscreen=document.querySelector('.startscreen');
     let gamearea=document.querySelector('.gamearea');
     let speed=3; let speed1=5;
-    let score1 = 0; // CORREÇÃO do bug estava aqui, essa linha faltava
+    let score1 = 0;
     let music =new Audio('music.mp3'); music.loop = true;
     let crash=new Audio('crash.wav');
     let move=new Audio('move1.mp3');
@@ -103,18 +131,18 @@
         '3': { imagem: 'aviso3.png', audio: new Audio('audio3.mp3') }, '4': { imagem: 'aviso4.png', audio: new Audio('audio4.mp3') }
     };
 
-    const touchControls = document.querySelector('#touch-controls');
-    const btnUp = document.querySelector('#btn-up'); const btnDown = document.querySelector('#btn-down');
-    const btnLeft = document.querySelector('#btn-left'); const btnRight = document.querySelector('#btn-right');
+    // --- Seletores dos novos controles ---
+    const touchContainer = document.querySelector('#touch-container');
+    const btnLeft = document.querySelector('#btn-left');
+    const btnRight = document.querySelector('#btn-right');
 
     function handleTouch(key, isPressed) {
+        // Ignora cima/baixo para focar na jogabilidade mobile
+        if (key === 'ArrowUp' || key === 'ArrowDown') return; 
+        
         keys[key] = isPressed;
         if(player.start){ if (isPressed) { move.play(); } else { move.pause(); } }
     }
-    btnUp.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('ArrowUp', true); });
-    btnUp.addEventListener('touchend', () => handleTouch('ArrowUp', false));
-    btnDown.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('ArrowDown', true); });
-    btnDown.addEventListener('touchend', () => handleTouch('ArrowDown', false));
     btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('ArrowLeft', true); });
     btnLeft.addEventListener('touchend', () => handleTouch('ArrowLeft', false));
     btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch('ArrowRight', true); });
@@ -125,8 +153,13 @@
             messageContainer.classList.add('hide');
             if (currentCarType > TOTAL_ENEMY_CARS) { restart(true); } else {
                 let car = document.querySelector('.car');
-                player.x = 100; player.y = 500;
-                car.style.left = player.x + 'px'; car.style.top = player.y + 'px';
+                
+                // Reposiciona o carro no centro ao continuar
+                player.y = gamearea.offsetHeight - 80;
+                player.x = (gamearea.offsetWidth / 2) - (50 / 2);
+                car.style.top = player.y + 'px';
+                car.style.left = player.x + 'px';
+
                 player.start = true;
                 music.play();
                 window.requestAnimationFrame(gameplay);
@@ -154,25 +187,30 @@
         gamearea.classList.remove('hide');
         startscreen.classList.add('hide');
         score.classList.remove('hide');
-        touchControls.classList.remove('hide');
+        touchContainer.classList.remove('hide');
 		createRoadStrip();
 		createEnemies();
         window.requestAnimationFrame(gameplay);
         let car= document.createElement('div');
         car.setAttribute('class','car');
         gamearea.appendChild(car);
-        player.x = 100; player.y = 500;
+
+        // --- CARRO COMEÇA NO CENTRO E EMBAIXO ---
+        const carWidth = 50;
+        const carHeight = 70;
+        player.x = (gamearea.offsetWidth / 2) - (carWidth / 2);
+        player.y = gamearea.offsetHeight - (carHeight + 20); // 20px de margem do fundo
     }
 
     function gameplay() {
         if (player.start) {
-            const carHeight = 70, carWidth = 50;
-            const boundaryY = gamearea.offsetHeight - carHeight;
+            const carWidth = 50;
             const boundaryX = gamearea.offsetWidth - carWidth;
-            if(keys.ArrowUp && player.y > 0) player.y-=5;
-            if(keys.ArrowDown && player.y < boundaryY) player.y+=5;
+            
+            // Movimento Apenas Esquerda/Direita
             if(keys.ArrowLeft && player.x > 0) player.x-=5;
             if(keys.ArrowRight && player.x < boundaryX) player.x+=5;
+
             let car=document.querySelector('.car');
             car.style.top=player.y + "px"; car.style.left=player.x + "px";
             
@@ -204,7 +242,7 @@
             let sinn = String(currentCarType);
             enemy.dataset.type = sinn;
             enemy.style.backgroundImage = `url('enemycar${sinn}.png')`;
-            enemy.style.left = (Math.random() * 330 + 25) + "px";
+            enemy.style.left = (Math.random() * (gamearea.offsetWidth - 50)) + "px";
             enemy.style.top = enemy.y + "px";
         }
 	}
@@ -229,7 +267,7 @@
     function movelines() {
         let lines=document.querySelectorAll(".roadstrip");
         lines.forEach(function(item) {
-            if(item.y>600) item.y-=670;
+            if(item.y > gamearea.offsetHeight) item.y -= (gamearea.offsetHeight + 100);
             item.y+=speed1;
             speed1+=0.0002;
             item.style.top=item.y + "px";
@@ -265,7 +303,7 @@
     function restart(isVictory = false) {
 		gamearea.innerHTML = '';
 		gamearea.classList.add('hide');
-        touchControls.classList.add('hide');
+        touchContainer.classList.add('hide');
         if (isVictory) { startscreen.innerHTML = "Parabéns!<small>Você aprendeu sobre os perigos no trânsito. Clique para jogar de novo.</small>"; }
         else { startscreen.innerHTML = 'Click to replay'; }
 		startscreen.classList.remove('hide');
