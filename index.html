@@ -134,9 +134,15 @@
             if(keys.ArrowRight && player.x < boundaryX) player.x+=5;
             let car=document.querySelector('.car');
             car.style.top=player.y + "px"; car.style.left=player.x + "px";
+            
             movelines();
             moveenemy(car);
-            score.innerHTML = `Carros Atingidos: ${hitCars.size} / ${TOTAL_ENEMY_CARS}`;
+            
+            // --- INÍCIO DAS ALTERAÇÕES ---
+            score1++; // A pontuação aumenta constantemente enquanto você joga
+            score.innerHTML = `Score: ${score1}`; // Exibe a nova pontuação
+            // --- FIM DAS ALTERAÇÕES ---
+            
             window.requestAnimationFrame(gameplay);
         }
     }
