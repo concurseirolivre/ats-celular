@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabalho De ATS</title>
+</head>
+<style>
+    .hide{
+        display : none !important;
+    }
+    .car{background: url('uno.png');
+    background-repeat: no-repeat;
+        background-size:100% 100%;
+        height:70px;
+        width: 50px;
+        position: absolute;
+        top:500px;
+        left:100px;
+    }
+    .gamearea{margin: auto;
+        width:405px;
+        height:100vh;
+        background-color: #393737;
+        position: relative;
+        border-left:5px dashed white;
+        border-right:5px dashed white;
+    }
+    .roadstrip{
+        height: 85px;
+        width: 6px;
+        background-color: aliceblue;
+        position: absolute;
+        left: 197px;
+    }
+    .enemy{
+        height:70px;
+        width: 50px;
+        background-repeat: no-repeat;
+        background-size:100% 100%;
+        position: absolute;
+        top:400px;
+    }
+    body{
+        overflow: hidden;
+        width:100%;
+        height:97vh;
+        background: url('capa.png');
+        background-repeat: no-repeat;
+        background-size:100% 100%;
+    }
+    .startscreen{
+        font-family: cursive;
+        margin: auto;
+        height: auto;
+        width: 300px;
+        background-color: #3c99d5;
+        color: white;
+        border-radius: 20px;
+        padding: 20px;
+        text-align: center;
+        font-size: 33px;
+        box-shadow: 0px 6px 10px #c35357;
+        position: relative;
+        top: 200px;
+        cursor:pointer;
+    }
+    .startscreen small {
+        font-size: 16px;
+        display: block;
+        margin-top: 10px;
+    }
+    .score{
+        height: 44px;
+        width: auto;
+        min-width: 135px;
+        padding: 4px 15px;
+        background-color: blue;
+        color: white;
+        font-size: 30px;
+        position: absolute;
+        border: 2px solid white;
+        border-radius: 11px;
+        box-shadow: 0 5px 5px red;
+    }
+    
+    .message-overlay{
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.7); display: flex;
+        justify-content: center; align-items: center; z-index: 1000;
+    }
+    .message-box {
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        width: 90%;
+        max-width: 700px;
+        font-family: sans-serif;
+    }
+    .message-box button {
+        background-color: #3c99d5; color: white; border: none;
+        padding: 10px 20px; border-radius: 5px; font-size: 1em; cursor: pointer;
+    }
+    .message-box img {
+        max-width: 100%;
+        max-height: 70vh;
+        margin-bottom: 20px;
+    }
+</style>
+<body>
+    <div class="score hide">score : 0</div>
+    <div class="startscreen ">Click para jogar </div>
+    <div class="gamearea hide"></div>
+
+    <div class="message-overlay hide" id="messageContainer">
+        <div class="message-box">
+            <img id="awarenessImage" src="" alt="Aviso de Trânsito">
+            <button id="continueButton">Continuar</button>
+        </div>
+    </div>
+
+</body>
+<script>
+    let score=document.querySelector('.score');
+    let startscreen=document.querySelector('.startscreen');
+    let gamearea=document.querySelector('.gamearea');
+
+    let speed=3;
+    let speed1=5;
+    let music =new Audio('music.mp3');
+    music.loop = true; // Adicionado para a música tocar continuamente
+    let crash=new Audio('crash.wav');
+    let move=new Audio('move1.mp3');
+    let keys={ ArrowUp:false,ArrowDown:false,ArrowLeft:false,ArrowRight:false };
+    let player={};
+    
+    let hitCars = new Set();
+    const TOTAL_ENEMY_CARS = 4;
+    let currentCarType = 1;
+
+    // --- NOVA CONSTANTE PARA A JOGABILIDADE ---
+    const MIN_VERTICAL_DISTANCE = 150; // Distância mínima (em pixels) entre os carros inimigos
+
+    const messageContainer = document.querySelector('#messageContainer');
+    const awarenessImage = document.querySelector('#awarenessImage');
+    const continueButton = document.querySelector('#continueButton');
+    
+    const avisosPorCarro = {
+        '1': { imagem: 'aviso1.png', audio: new Audio('audio1.mp3') },
+        '2': { imagem: 'aviso2.png', audio: new Audio('audio2.mp3') },
+        '3': { imagem: 'aviso3.png', audio: new Audio('audio3.mp3') },
+        '4': { imagem: 'aviso4.png', audio: new Audio('audio4.mp3') }
+    };
+
+    if (continueButton) {
+        continueButton.addEventListener('click', () => {
+            messageContainer.classList.add('hide');
+            
+            if (currentCarType > TOTAL_ENEMY_CARS) {
+                restart(true);
+            } else {
+                let car = document.querySelector('.car');
+                player.x = 100;
+                player.y = 500;
+                car.style.left = player.x + 'px';
+                car.style.top = player.y + 'px';
+                
+                player.start = true;
+                music.play();
+                window.requestAnimationFrame(gameplay);
+            }
+        });
+    }
+
+    function showAwarenessMessage(tipoCarro) {
+        if (messageContainer && awarenessImage && avisosPorCarro[tipoCarro]) {
+            const aviso = avisosPorCarro[tipoCarro];
+            awarenessImage.src = aviso.imagem;
+            if(aviso.audio) aviso.audio.play();
+            messageContainer.classList.remove('hide');
+        }
+    }
+
+    document.addEventListener('keydown',keydown);
+    document.addEventListener("keyup",keyup);
+    startscreen.addEventListener('click',start);
+    
+    function start() {
+        player.start=true;
+        music.play();
+        gamearea.innerHTML = '';
+        gamearea.classList.remove('hide');
+        startscreen.classList.add('hide');
+        score.classList.remove('hide');
+		createRoadStrip();
+		createEnemies(); // Esta função agora garante um início seguro
+        window.requestAnimationFrame(gameplay);
+        let car= document.createElement('div');
+        car.setAttribute('class','car');
+        gamearea.appendChild(car);
+        player.x = 100;
+        player.y = 500;
+    }
+
+    function gameplay() {
+        if (player.start) {
+            if(keys.ArrowUp && player.y>0) player.y-=5;
+            if(keys.ArrowDown && player.y < (gamearea.offsetHeight - 70)) player.y+=5;
+            if(keys.ArrowLeft && player.x>0) player.x-=5;
+            if(keys.ArrowRight && player.x < (gamearea.offsetWidth - 50)) player.x+=5;
+            
+            let car=document.querySelector('.car');
+            car.style.top=player.y + "px";
+            car.style.left=player.x + "px";
+            
+            movelines();
+            moveenemy(car);
+            
+            score.innerHTML = `Crimes Cometidos: ${hitCars.size} / ${TOTAL_ENEMY_CARS}`;
+
+            window.requestAnimationFrame(gameplay);
+        }
+    }
+
+	function createRoadStrip(){
+        for(let i=0;i<6;i++) {
+            let roadstrip=document.createElement('div');
+            roadstrip.setAttribute('class',"roadstrip");
+            gamearea.appendChild(roadstrip);
+            roadstrip.style.top=(i*110) + "px";
+            roadstrip.y=(i*110);
+        }
+	}
+
+    // --- FUNÇÃO createEnemies ATUALIZADA PARA UM INÍCIO SEGURO ---
+	function createEnemies(){
+        for(let i=0;i<3;i++) {
+            let enemy=document.createElement('div');
+            enemy.setAttribute('class',"enemy");
+            gamearea.appendChild(enemy);
+
+            // Define posições iniciais fixas e seguras, bem espaçadas verticalmente
+            enemy.y = -((i * 250) + 200); // Ex: -200, -450, -700
+            
+            let sinn = String(currentCarType);
+            enemy.dataset.type = sinn;
+            enemy.style.backgroundImage = `url('enemycar${sinn}.png')`;
+            enemy.style.left = (Math.random() * 330 + 25) + "px";
+            enemy.style.top = enemy.y + "px";
+        }
+	}
+    
+    // --- FUNÇÃO respawnEnemy ATUALIZADA COM "DISTANCIAMENTO SOCIAL" ---
+    function respawnEnemy(enemy) {
+        let newY;
+        let isSafe;
+        const otherEnemies = Array.from(document.querySelectorAll('.enemy')).filter(e => e !== enemy);
+
+        do {
+            // Sorteia uma nova posição vertical
+            newY = -(Math.random() * 400 + 200); // Sorteia um valor entre -200px e -600px
+            isSafe = true; // Assume que a posição é segura
+
+            // Verifica contra todos os outros inimigos
+            for(let other of otherEnemies) {
+                if (Math.abs(newY - other.y) < MIN_VERTICAL_DISTANCE) {
+                    isSafe = false; // Posição é muito próxima, não é segura
+                    break; // Para de verificar e tenta sortear de novo
+                }
+            }
+        } while (!isSafe); // Repete o sorteio até encontrar uma posição segura
+
+        enemy.y = newY;
+        
+        let sinn = String(currentCarType);
+        enemy.style.left = (Math.random() * 330 + 25) + "px";
+        enemy.dataset.type = sinn;
+        enemy.style.backgroundImage = `url('enemycar${sinn}.png')`;
+    }
+
+    function movelines() {
+        let lines=document.querySelectorAll(".roadstrip");
+        lines.forEach(function(item) {
+            if(item.y>600) item.y-=670;
+            item.y+=speed1;
+            speed1+=0.0002;
+            item.style.top=item.y + "px";
+        });
+    }
+
+    function moveenemy(car) {
+        let enemies=document.querySelectorAll(".enemy");
+        enemies.forEach(function(item) {
+            if(iscollide(car,item) && item.dataset.type == currentCarType) {
+                crash.play();
+                music.pause();
+                player.start = false;
+                
+                let tipoDoCarro = item.dataset.type;
+                hitCars.add(tipoDoCarro);
+                
+                currentCarType++;
+                
+                respawnEnemy(item); 
+                
+                showAwarenessMessage(tipoDoCarro);
+            }
+
+            if(item.y > gamearea.offsetHeight) {
+                respawnEnemy(item);
+            }
+
+            item.y+=speed;
+            speed+=0.0002;
+            item.style.top=item.y + "px";
+        });
+    }
+ 
+    function keydown(e){
+        keys[e.key]=true;
+        if(player.start) move.play();
+    }
+    function keyup(e){
+        keys[e.key]=false;
+        move.pause();
+    }
+    function iscollide(a,b) {
+        let acar=a.getBoundingClientRect();
+        let bcar=b.getBoundingClientRect();
+        return !((acar.top>=bcar.bottom)|| (acar.left>=bcar.right) || (acar.right<=bcar.left)||(acar.bottom<=bcar.top));
+    }
+
+    function restart(isVictory = false) {
+		gamearea.innerHTML = '';
+		gamearea.classList.add('hide');
+
+        if (isVictory) {
+            startscreen.innerHTML = "Parabéns!<small>Você aprendeu sobre os perigos do trânsito e seus impactos na saúde. Clique para jogar de novo.</small>";
+        } else {
+            startscreen.innerHTML = 'Click to replay';
+        }
+
+		startscreen.classList.remove('hide');
+		score.classList.add('hide');
+		
+	    speed=4;
+	    speed1=5;
+        hitCars.clear();
+        currentCarType = 1;
+    }
+</script>
+</html>
