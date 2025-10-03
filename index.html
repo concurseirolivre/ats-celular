@@ -33,7 +33,7 @@
     }
     .car{
         background: url('uno.png'); background-repeat: no-repeat; background-size:100% 100%;
-        height:70px; width: 50px; position: absolute; bottom: 20px; /* Começa mais em baixo */
+        height:70px; width: 50px; position: absolute; bottom: 20px;
     }
     .enemy{
         height:70px; width: 50px; background-repeat: no-repeat; background-size:100% 100%;
@@ -41,8 +41,8 @@
     }
     .roadstrip{
         height: 85px; width: 6px; background-color: aliceblue; position: absolute;
-        left: 50%; /* Centralizado dinamicamente */
-        transform: translateX(-50%); /* Centralizado dinamicamente */
+        left: 50%;
+        transform: translateX(-50%);
     }
     .score{
         position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
@@ -53,10 +53,10 @@
 
     /* Tela de Início e Pop-up */
     .startscreen{
-        font-family: cursive; margin: auto; height: auto; width: 250px;
+        font-family: cursive; margin: auto; height: auto; width: 280px; /* Ajustado */
         background-color: #3c99d5; color: white; border-radius: 20px;
-        padding: 15px; text-align: center; font-size: 28px;
-        box-shadow: 0px 6px 10px #c35357; position: relative; top: 15vh; /* 15% do topo da tela */
+        padding: 15px; text-align: center; font-size: 24px; /* Ajustado */
+        box-shadow: 0px 6px 10px #c35357; position: relative; top: 15vh;
         cursor:pointer;
     }
     .startscreen small { font-size: 16px; display: block; margin-top: 10px; }
@@ -65,15 +65,13 @@
     .message-box button { background-color: #3c99d5; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-size: 1em; cursor: pointer; }
     .message-box img { max-width: 100%; max-height: 70vh; margin-bottom: 20px; }
 
-    /* --- NOVOS CONTROLES DE TOQUE (ESQUERDA/DIREITA) --- */
+    /* Controles de Toque */
     .touch-control {
         position: fixed;
         bottom: 0;
-        width: 50%; /* Cada controle ocupa metade da tela */
-        height: 30vh; /* Ocupa 30% da altura da tela, área grande para o dedão */
+        width: 50%;
+        height: 30vh;
         z-index: 100;
-        /* A cor de fundo é opcional, para depuração. Pode ser transparent. */
-        /* background-color: rgba(255, 0, 0, 0.2); */
         color: rgba(255, 255, 255, 0.5);
         font-size: 40px;
         display: flex;
@@ -131,15 +129,12 @@
         '3': { imagem: 'aviso3.png', audio: new Audio('audio3.mp3') }, '4': { imagem: 'aviso4.png', audio: new Audio('audio4.mp3') }
     };
 
-    // --- Seletores dos novos controles ---
     const touchContainer = document.querySelector('#touch-container');
     const btnLeft = document.querySelector('#btn-left');
     const btnRight = document.querySelector('#btn-right');
 
     function handleTouch(key, isPressed) {
-        // Ignora cima/baixo para focar na jogabilidade mobile
         if (key === 'ArrowUp' || key === 'ArrowDown') return; 
-        
         keys[key] = isPressed;
         if(player.start){ if (isPressed) { move.play(); } else { move.pause(); } }
     }
@@ -153,13 +148,10 @@
             messageContainer.classList.add('hide');
             if (currentCarType > TOTAL_ENEMY_CARS) { restart(true); } else {
                 let car = document.querySelector('.car');
-                
-                // Reposiciona o carro no centro ao continuar
                 player.y = gamearea.offsetHeight - 80;
                 player.x = (gamearea.offsetWidth / 2) - (50 / 2);
                 car.style.top = player.y + 'px';
                 car.style.left = player.x + 'px';
-
                 player.start = true;
                 music.play();
                 window.requestAnimationFrame(gameplay);
@@ -195,31 +187,24 @@
         car.setAttribute('class','car');
         gamearea.appendChild(car);
 
-        // --- CARRO COMEÇA NO CENTRO E EMBAIXO ---
         const carWidth = 50;
         const carHeight = 70;
         player.x = (gamearea.offsetWidth / 2) - (carWidth / 2);
-        player.y = gamearea.offsetHeight - (carHeight + 20); // 20px de margem do fundo
+        player.y = gamearea.offsetHeight - (carHeight + 20);
     }
 
     function gameplay() {
         if (player.start) {
             const carWidth = 50;
             const boundaryX = gamearea.offsetWidth - carWidth;
-            
-            // Movimento Apenas Esquerda/Direita
             if(keys.ArrowLeft && player.x > 0) player.x-=5;
             if(keys.ArrowRight && player.x < boundaryX) player.x+=5;
-
             let car=document.querySelector('.car');
             car.style.top=player.y + "px"; car.style.left=player.x + "px";
-            
             movelines();
             moveenemy(car);
-            
             score1++;
             score.innerHTML = `Score: ${score1}`;
-            
             window.requestAnimationFrame(gameplay);
         }
     }
@@ -300,16 +285,34 @@
         return !((acar.top>=bcar.bottom)||(acar.left>=bcar.right)||(acar.right<=bcar.left)||(acar.bottom<=bcar.top));
     }
 
+    // --- FUNÇÃO RESTART ATUALIZADA COM A NOVA TELA FINAL ---
     function restart(isVictory = false) {
-		gamearea.innerHTML = '';
-		gamearea.classList.add('hide');
+        gamearea.innerHTML = '';
+        gamearea.classList.add('hide');
         touchContainer.classList.add('hide');
-        if (isVictory) { startscreen.innerHTML = "Parabéns!<small>Você aprendeu sobre os perigos no trânsito. Clique para jogar de novo.</small>"; }
-        else { startscreen.innerHTML = 'Click to replay'; }
-		startscreen.classList.remove('hide');
-		score.classList.add('hide');
+
+        if (isVictory) {
+            // Calcula uma pontuação final baseada na rapidez (menor score1 = mais pontos)
+            let pontuacaoFinal = Math.max(0, 20000 - score1);
+
+            startscreen.innerHTML = `
+                <div style="font-size: 22px;">Pontuação Final: ${pontuacaoFinal}</div>
+                <small style="color: #ffdddd; font-weight: bold; font-size: 17px; margin-top: 15px; display: block;">
+                    Você perdeu o jogo e também sua CNH.
+                </small>
+                <small style="margin-top: 10px; font-size: 15px; display: block;">Clique para tentar de novo.</small>
+            `;
+        } else {
+            startscreen.innerHTML = 'Bora jogar';
+        }
+
+        startscreen.classList.remove('hide');
+        score.classList.add('hide');
+        
+        // Reseta as variáveis para um novo jogo
         score1 = 0;
-	    speed=4; speed1=5;
+        speed=4;
+        speed1=5;
         hitCars.clear();
         currentCarType = 1;
     }
